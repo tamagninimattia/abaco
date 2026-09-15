@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contabilità personale</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<div class="app">
+
+  <nav class="nav">
+    <h1>Contabilità</h1>
+    <ul>
+      <li><button class="active" data-vista="fondi">Fondi</button></li>
+      <li><button data-vista="movimenti">Movimenti</button></li>
+      <li><button data-vista="budget">Budget</button></li>
+    </ul>
+  </nav>
+
+  <main>
+
+    <!-- VISTA FONDI -->
+    <section id="vista-fondi" class="vista active">
+      <h2>Fondi</h2>
+      <p class="sottotitolo">Conti, casse e debiti, con saldo calcolato dai movimenti e saldo reale di riscontro.</p>
+
+      <table id="tabella-fondi">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Tipo</th>
+            <th class="numero">Saldo confermato</th>
+            <th class="numero">Con provvisori</th>
+            <th class="numero">Saldo reale</th>
+            <th class="numero">Scarto</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="pannello" style="margin-top:28px;">
+        <h3>Nuovo fondo</h3>
+        <form id="form-nuovo-fondo">
+          <div class="campi">
+            <div>
+              <label for="nuovo-fondo-nome">Nome</label>
+              <input id="nuovo-fondo-nome" type="text" required placeholder="es. Conto corrente BPM">
+            </div>
+            <div>
+              <label for="nuovo-fondo-tipo">Tipo</label>
+              <select id="nuovo-fondo-tipo">
+                <option value="attivo">Attivo</option>
+                <option value="passivo">Passivo</option>
+              </select>
+            </div>
+            <div>
+              <label for="nuovo-fondo-sottotipo">Sottotipo</label>
+              <select id="nuovo-fondo-sottotipo"></select>
+            </div>
+            <div>
+              <label for="nuovo-fondo-saldo">Saldo iniziale</label>
+              <input id="nuovo-fondo-saldo" type="number" step="0.01" value="0">
+            </div>
+          </div>
+          <button type="submit" class="primario">Aggiungi fondo</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- VISTA MOVIMENTI -->
+    <section id="vista-movimenti" class="vista">
+      <h2>Movimenti</h2>
+      <p class="sottotitolo">Storico movimenti per fondo selezionato.</p>
+
+      <div class="campi" style="margin-bottom:14px; align-items:end;">
+        <div>
+          <label for="filtro-fondo-movimenti">Fondo</label>
+          <select id="filtro-fondo-movimenti"></select>
+        </div>
+      </div>
+
+      <label class="filtro-provvisori">
+        <input type="checkbox" id="filtro-mostra-provvisori" checked>
+        Mostra anche i movimenti provvisori
+      </label>
+
+      <table id="tabella-movimenti">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Tipo</th>
+            <th>Voce</th>
+            <th>Descrizione</th>
+            <th class="numero">Importo</th>
+            <th>Stato</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="pannello" style="margin-top:28px;">
+        <h3>Nuovo movimento</h3>
+        <form id="form-nuovo-movimento">
+          <div class="campi">
+            <div>
+              <label for="nuovo-mov-fondo">Fondo</label>
+              <select id="nuovo-mov-fondo"></select>
+            </div>
+            <div>
+              <label for="nuovo-mov-tipo">Tipo</label>
+              <select id="nuovo-mov-tipo">
+                <option value="spesa">Spesa</option>
+                <option value="entrata">Entrata</option>
+                <option value="giroconto">Giroconto</option>
+              </select>
+            </div>
+            <div>
+              <label for="nuovo-mov-importo">Importo</label>
+              <input id="nuovo-mov-importo" type="number" step="0.01" required placeholder="0,00">
+            </div>
+            <div>
+              <label for="nuovo-mov-data">Data</label>
+              <input id="nuovo-mov-data" type="date" required>
+            </div>
+            <div>
+              <label for="nuovo-mov-stato">Stato</label>
+              <select id="nuovo-mov-stato">
+                <option value="confermato">Confermato</option>
+                <option value="provvisorio">Provvisorio</option>
+              </select>
+            </div>
+            <div id="campo-destinazione" style="display:none;">
+              <label for="nuovo-mov-destinazione">Fondo di destinazione</label>
+              <select id="nuovo-mov-destinazione"></select>
+            </div>
+            <div id="campo-voce">
+              <label for="nuovo-mov-voce">Voce</label>
+              <select id="nuovo-mov-voce" required></select>
+            </div>
+            <div>
+              <label for="nuovo-mov-descrizione">Descrizione</label>
+              <input id="nuovo-mov-descrizione" type="text" placeholder="facoltativa">
+            </div>
+          </div>
+          <button type="submit" class="primario">Registra movimento</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- VISTA BUDGET -->
+    <section id="vista-budget" class="vista">
+      <h2>Budget</h2>
+      <p class="sottotitolo">Voci di spesa/entrata — il dettaglio, non le categorie, è la base del budget.</p>
+
+      <div class="campi" style="margin-bottom:14px;">
+        <div>
+          <label for="filtro-tipo-voci">Mostra</label>
+          <select id="filtro-tipo-voci">
+            <option value="">Tutte</option>
+            <option value="spesa">Solo spese</option>
+            <option value="entrata">Solo entrate</option>
+          </select>
+        </div>
+      </div>
+
+      <table id="tabella-voci">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Tipo</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="pannello" style="margin-top:28px;">
+        <h3>Nuova voce</h3>
+        <form id="form-nuova-voce">
+          <div class="campi">
+            <div>
+              <label for="nuova-voce-nome">Nome</label>
+              <input id="nuova-voce-nome" type="text" required placeholder="es. Caffè, Sushi, Stipendio">
+            </div>
+            <div>
+              <label for="nuova-voce-tipo">Tipo</label>
+              <select id="nuova-voce-tipo">
+                <option value="spesa">Spesa</option>
+                <option value="entrata">Entrata</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="primario">Aggiungi voce</button>
+        </form>
+      </div>
+
+      <p class="sottotitolo" style="margin-top:28px;">Pianificazione mensile per voce — in arrivo.</p>
+    </section>
+
+  </main>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
